@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -27,6 +28,12 @@ func main() {
 		name := c.Param("name")
 		action := c.Param("action")
 		c.String(http.StatusOK, name+" is "+action)
+	})
+
+	// url参数
+	r.GET("/welcome", func(c *gin.Context) {
+		name := c.DefaultQuery("name", "Jack")
+		c.String(http.StatusOK, fmt.Sprintf("Hello %s", name))
 	})
 
 	// 3.监听端口，默认8080
