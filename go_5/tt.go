@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"log"
 )
 
 func main() {
@@ -24,16 +24,35 @@ func main() {
 	//r.POST("/xxxPost", getting)
 
 	// api参数
-	r.GET("/user/:name/*action", func(c *gin.Context) {
-		name := c.Param("name")
-		action := c.Param("action")
-		c.String(http.StatusOK, name+" is "+action)
-	})
+	//r.GET("/user/:name/*action", func(c *gin.Context) {
+	//	name := c.Param("name")
+	//	action := c.Param("action")
+	//	c.String(http.StatusOK, name+" is "+action)
+	//})
 
 	// url参数
-	r.GET("/welcome", func(c *gin.Context) {
-		name := c.DefaultQuery("name", "Jack")
-		c.String(http.StatusOK, fmt.Sprintf("Hello %s", name))
+	//r.GET("/welcome", func(c *gin.Context) {
+	//	name := c.DefaultQuery("name", "Jack")
+	//	c.String(http.StatusOK, fmt.Sprintf("Hello %s", name))
+	//})
+
+	// 表单参数
+	//r.POST("/form", func(c *gin.Context) {
+	//	// 表单参数设置默认值
+	//	type1 := c.DefaultPostForm("type", "alert")
+	//	// 接受其他的
+	//	username := c.PostForm("username")
+	//	password := c.PostForm("password")
+	//	hobbys := c.PostFormArray("hobby")
+	//	c.String(http.StatusOK, fmt.Sprintf("type is %s, username is %s, password is %s, hobbys is %v", type1, username, password, hobbys))
+	//})
+
+	// 上传文件
+	r.POST("/upload", func(c *gin.Context) {
+		file, _ := c.FormFile("file")
+		log.Println(file.Filename)
+		c.SaveUploadedFile(file, "./go_5/page/"+file.Filename)
+		c.String(200, fmt.Sprintf("%s upload!", file.Filename))
 	})
 
 	// 3.监听端口，默认8080
