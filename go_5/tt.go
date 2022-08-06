@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
+	"net/http"
 )
 
 func main() {
@@ -48,11 +48,30 @@ func main() {
 	//})
 
 	// 上传文件
+	//r.POST("/upload", func(c *gin.Context) {
+	//	file, _ := c.FormFile("file")
+	//	log.Println(file.Filename)
+	//	c.SaveUploadedFile(file, "./go_5/page/"+file.Filename)
+	//	c.String(200, fmt.Sprintf("%s upload!", file.Filename))
+	//})
+
+	// 上传多文件
+	r.MaxMultipartMemory = 8 << 20
 	r.POST("/upload", func(c *gin.Context) {
-		file, _ := c.FormFile("file")
-		log.Println(file.Filename)
-		c.SaveUploadedFile(file, "./go_5/page/"+file.Filename)
-		c.String(200, fmt.Sprintf("%s upload!", file.Filename))
+		form, err := c.MultipartForm()
+		if err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("%s upload!", err.Error()))
+		}
+
+		// 获取所有图片
+		files := form.File["files"]
+		for _, file := range files {
+			// 逐一存
+			if err := c.SaveUploadedFile(file, "./go_5/page/"+file.Filename); err != nil {
+				c.String(http.StatusBadRequest, fmt.Sprintf("upload err %s", err.Error()))
+			}
+			c.String(200, fmt.Sprintf("upload ok %d files", len(files)))
+		}
 	})
 
 	// 3.监听端口，默认8080
