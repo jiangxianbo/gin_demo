@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func main() {
@@ -11,9 +10,10 @@ func main() {
 	// 默认使用了2个中间件 Logger(), Recovery()
 	r := gin.Default()
 
-	//// 也可以创建不带中间件的路由
-	//// r := gin.New()
-	//// 2.绑定路由，执行函数
+	// 也可以创建不带中间件的路由
+	// r := gin.New()
+
+	// 2.绑定路由，执行函数
 	//r.GET("/", func(c *gin.Context) {
 	//	c.String(http.StatusOK, "hello world!")
 	//	// c.JSON：返回JSON格式的数据
@@ -23,20 +23,20 @@ func main() {
 	//})
 	//r.POST("/xxxPost", getting)
 
-	// api参数
+	// 3.api参数
 	//r.GET("/user/:name/*action", func(c *gin.Context) {
 	//	name := c.Param("name")
 	//	action := c.Param("action")
 	//	c.String(http.StatusOK, name+" is "+action)
 	//})
 
-	// url参数
+	// 4.url参数
 	//r.GET("/welcome", func(c *gin.Context) {
 	//	name := c.DefaultQuery("name", "Jack")
 	//	c.String(http.StatusOK, fmt.Sprintf("Hello %s", name))
 	//})
 
-	// 表单参数
+	// 5.表单参数
 	//r.POST("/form", func(c *gin.Context) {
 	//	// 表单参数设置默认值
 	//	type1 := c.DefaultPostForm("type", "alert")
@@ -47,7 +47,7 @@ func main() {
 	//	c.String(http.StatusOK, fmt.Sprintf("type is %s, username is %s, password is %s, hobbys is %v", type1, username, password, hobbys))
 	//})
 
-	// 上传文件
+	// 6.上传文件
 	//r.POST("/upload", func(c *gin.Context) {
 	//	file, _ := c.FormFile("file")
 	//	log.Println(file.Filename)
@@ -55,27 +55,50 @@ func main() {
 	//	c.String(200, fmt.Sprintf("%s upload!", file.Filename))
 	//})
 
-	// 上传多文件
-	r.MaxMultipartMemory = 8 << 20
-	r.POST("/upload", func(c *gin.Context) {
-		form, err := c.MultipartForm()
-		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("%s upload!", err.Error()))
-		}
+	// 7.上传多文件
+	//r.MaxMultipartMemory = 8 << 20
+	//r.POST("/upload", func(c *gin.Context) {
+	//	form, err := c.MultipartForm()
+	//	if err != nil {
+	//		c.String(http.StatusBadRequest, fmt.Sprintf("%s upload!", err.Error()))
+	//	}
+	//
+	//	// 获取所有图片
+	//	files := form.File["files"]
+	//	for _, file := range files {
+	//		// 逐一存
+	//		if err := c.SaveUploadedFile(file, "./go_5/page/"+file.Filename); err != nil {
+	//			c.String(http.StatusBadRequest, fmt.Sprintf("upload err %s", err.Error()))
+	//		}
+	//		c.String(200, fmt.Sprintf("upload ok %d files", len(files)))
+	//	}
+	//})
 
-		// 获取所有图片
-		files := form.File["files"]
-		for _, file := range files {
-			// 逐一存
-			if err := c.SaveUploadedFile(file, "./go_5/page/"+file.Filename); err != nil {
-				c.String(http.StatusBadRequest, fmt.Sprintf("upload err %s", err.Error()))
-			}
-			c.String(200, fmt.Sprintf("upload ok %d files", len(files)))
-		}
-	})
+	// 8.路由组
+	v1 := r.Group("v1")
+	{
+		v1.GET("/login", login)
+		v1.GET("submit", submit)
+	}
+
+	v2 := r.Group("v2")
+	{
+		v2.POST("/login", login)
+		v2.POST("submit", submit)
+	}
 
 	// 3.监听端口，默认8080
 	r.Run(":8000")
+}
+
+func login(c *gin.Context) {
+	name := c.DefaultQuery("name", "jack")
+	c.String(200, fmt.Sprintf("hello %s\n", name))
+}
+
+func submit(c *gin.Context) {
+	name := c.DefaultQuery("name", "lily")
+	c.String(200, fmt.Sprintf("hello %s\n", name))
 }
 
 func getting(c *gin.Context) {
