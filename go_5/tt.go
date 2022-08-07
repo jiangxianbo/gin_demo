@@ -262,12 +262,29 @@ func main() {
 	//}
 
 	// 中间件联系
-	r.Use(myTime)
-	group := r.Group("/shopping")
-	{
-		group.GET("/index", shopIndexHandler)
-		group.GET("/home", shopHomeHandler)
-	}
+	//r.Use(myTime)
+	//group := r.Group("/shopping")
+	//{
+	//	group.GET("/index", shopIndexHandler)
+	//	group.GET("/home", shopHomeHandler)
+	//}
+
+	// 服务端要给客户端cookie
+	r.GET("/cookie", func(c *gin.Context) {
+		// 获取客户端是否携带cookie
+		cookie, err := c.Cookie("key_cookie")
+		if err != nil {
+			cookie = "NotSet"
+			// 设置cookie
+			// maxAge int, 单位为秒
+			// path,cookie所在目录
+			// domain string,域名
+			// secure 是否智能通过https访问
+			// httpOnly bool  是否允许别人通过js获取自己的cookie
+			c.SetCookie("key_cookie", "value_cookie", 60, "/", "127.0.0.1", false, true)
+		}
+		fmt.Printf("cookie的值是： %s\n", cookie)
+	})
 
 	// 3.监听端口，默认8080
 	r.Run(":8000")
