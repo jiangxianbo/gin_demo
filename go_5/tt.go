@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"time"
 )
 
@@ -11,6 +10,31 @@ type Login struct {
 	// binding:"required"修饰的字段，若接收为空值，则报错，是必须字段
 	User     string `form:"username" json:"user" uri:"user"  xml:"user" binding:"required"`
 	Password string `form:"password" json:"password" uri:"password"  xml:"password" binding:"required"`
+}
+
+// MiddleWare 定义中间件
+func MiddleWare() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		t := time.Now()
+		fmt.Println("中间件开始执行了")
+		// 设置变量到Context的key中，可以通过Get()取
+		c.Set("request", "中间件")
+		// 执行函数
+		c.Next()
+		// 中间件执行完后续
+		status := c.Writer.Status()
+		fmt.Println("中间件执行完毕", status)
+		t2 := time.Since(t)
+		fmt.Println("time:", t2)
+	}
+}
+
+func myTime(c *gin.Context) {
+	start := time.Now()
+	c.Next()
+	// 统计时间
+	since := time.Since(start)
+	fmt.Println("程序用时：", since)
 }
 
 func main() {
@@ -200,25 +224,61 @@ func main() {
 	//	c.Redirect(http.StatusMovedPermanently, "https://www.baidu.com/")
 	//})
 
-	// 1.异步
-	r.GET("/long_async", func(c *gin.Context) {
-		// 需要搞一个副本
-		copyContext := c.Copy()
-		// 异步处理
-		go func() {
-			time.Sleep(time.Second * 3)
-			log.Println("异步执行", copyContext.Request.URL.Path)
-		}()
-	})
+	//// 1.异步
+	//r.GET("/long_async", func(c *gin.Context) {
+	//	// 需要搞一个副本
+	//	copyContext := c.Copy()
+	//	// 异步处理
+	//	go func() {
+	//		time.Sleep(time.Second * 3)
+	//		log.Println("异步执行", copyContext.Request.URL.Path)
+	//	}()
+	//})
+	//
+	//// 2.同步
+	//r.GET("/long_sync", func(c *gin.Context) {
+	//	time.Sleep(time.Second * 3)
+	//	log.Println("异步执行", c.Request.URL.Path)
+	//})
 
-	// 2.同步
-	r.GET("/long_sync", func(c *gin.Context) {
-		time.Sleep(time.Second * 3)
-		log.Println("异步执行", c.Request.URL.Path)
-	})
+	// 注册中间件
+	//r.Use(MiddleWare())
+	//{
+	//	r.GET("middleware", func(c *gin.Context) {
+	//		// 取值
+	//		req, _ := c.Get("request")
+	//		fmt.Println("request:", req)
+	//		// 页面返回
+	//		c.JSON(200, gin.H{"request": req})
+	//	})
+	//
+	//	r.GET("middleware2", MiddleWare(), func(c *gin.Context) {
+	//		// 取值
+	//		req, _ := c.Get("request")
+	//		fmt.Println("request:", req)
+	//		// 页面返回
+	//		c.JSON(200, gin.H{"request": req})
+	//	})
+	//}
+
+	// 中间件联系
+	r.Use(myTime)
+	group := r.Group("/shopping")
+	{
+		group.GET("/index", shopIndexHandler)
+		group.GET("/home", shopHomeHandler)
+	}
 
 	// 3.监听端口，默认8080
 	r.Run(":8000")
+}
+
+func shopIndexHandler(c *gin.Context) {
+	time.Sleep(time.Second * 5)
+}
+
+func shopHomeHandler(c *gin.Context) {
+	time.Sleep(time.Second * 3)
 }
 
 func login(c *gin.Context) {
