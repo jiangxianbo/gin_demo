@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
+	"time"
 )
 
 type Login struct {
@@ -187,10 +189,32 @@ func main() {
 
 	// HTML模板渲染
 	// 加载文件
-	r.LoadHTMLGlob("templates/*")
-	r.GET("/index", func(c *gin.Context) {
-		// 根据文件名
-		c.HTML(200, "index.tmpl", gin.H{"title": "我的标题"})
+	//r.LoadHTMLGlob("templates/*")
+	//r.GET("/index", func(c *gin.Context) {
+	//	// 根据文件名
+	//	c.HTML(200, "index.tmpl", gin.H{"title": "我的标题"})
+	//})
+
+	// 重定向
+	//r.GET("/redirect", func(c *gin.Context) {
+	//	c.Redirect(http.StatusMovedPermanently, "https://www.baidu.com/")
+	//})
+
+	// 1.异步
+	r.GET("/long_async", func(c *gin.Context) {
+		// 需要搞一个副本
+		copyContext := c.Copy()
+		// 异步处理
+		go func() {
+			time.Sleep(time.Second * 3)
+			log.Println("异步执行", copyContext.Request.URL.Path)
+		}()
+	})
+
+	// 2.同步
+	r.GET("/long_sync", func(c *gin.Context) {
+		time.Sleep(time.Second * 3)
+		log.Println("异步执行", c.Request.URL.Path)
 	})
 
 	// 3.监听端口，默认8080
