@@ -3,7 +3,14 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
+
+type Login struct {
+	// binding:"required"修饰的字段，若接收为空值，则报错，是必须字段
+	User     string `form:"username" json:"user" uri:"user"  xml:"user" binding:"required"`
+	Password string `form:"password" json:"password" uri:"password"  xml:"password" binding:"required"`
+}
 
 func main() {
 	// 1.创建一个默认的路由引擎
@@ -75,17 +82,67 @@ func main() {
 	//})
 
 	// 8.路由组
-	v1 := r.Group("v1")
-	{
-		v1.GET("/login", login)
-		v1.GET("submit", submit)
-	}
+	//v1 := r.Group("v1")
+	//{
+	//	v1.GET("/login", login)
+	//	v1.GET("submit", submit)
+	//}
+	//
+	//v2 := r.Group("v2")
+	//{
+	//	v2.POST("/login", login)
+	//	v2.POST("submit", submit)
+	//}
 
-	v2 := r.Group("v2")
-	{
-		v2.POST("/login", login)
-		v2.POST("submit", submit)
-	}
+	// json 绑定
+	//r.POST("loginJSON", func(c *gin.Context) {
+	//	// 声明接收的变量
+	//	var josn Login
+	//	// 将request的body中的数据，自动按照json格式解析到结构体
+	//	if err := c.ShouldBindJSON(&josn); err != nil {
+	//		// 返回错误信息
+	//		// gin.H封装了生成json数据的工具
+	//		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//		return
+	//	}
+	//
+	//	if josn.User != "root" || josn.Password != "admin" {
+	//		c.JSON(http.StatusBadRequest, gin.H{"status": "304"})
+	//		return
+	//	}
+	//	c.JSON(http.StatusOK, gin.H{"status": "200"})
+	//})
+
+	// 表单数据解析和绑定
+	//r.POST("loginForm", func(c *gin.Context) {
+	//	var form Login
+	//	// Bind() 默认解析并绑定form
+	//	// 根据请求头中content-type自动推断
+	//	if err := c.Bind(&form); err != nil {
+	//		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+	//		return
+	//	}
+	//
+	//	if form.User != "root" || form.Password != "admin" {
+	//		c.JSON(http.StatusBadRequest, gin.H{"status": 304})
+	//		return
+	//	}
+	//	c.JSON(http.StatusOK, gin.H{"status": 200})
+	//})
+
+	// URI数据解析和绑定
+	r.GET("/:user/:password", func(c *gin.Context) {
+		var login Login
+		if err := c.BindUri(&login); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+			return
+		}
+		if login.User != "root" || login.Password != "admin" {
+			c.JSON(http.StatusBadRequest, gin.H{"status": 304})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": 200})
+	})
 
 	// 3.监听端口，默认8080
 	r.Run(":8000")
